@@ -1,8 +1,10 @@
 import { test as base } from '@playwright/test'
 import { User } from "../data/customer";
+import { Product } from '../data/product';
 
 export type DataFixtures = {
     customer: User;
+    product: Product;
 };
 
 export const dataTest = base.extend<DataFixtures>({
@@ -25,4 +27,11 @@ export const dataTest = base.extend<DataFixtures>({
         }
         await use(customer);
     },
+
+    // product: async ({ }, use) => {
+    //     const product: Product = {
+            
+    //     }
+    //     await use(product);
+    // },
 });
