@@ -7,11 +7,12 @@ export type APIFixtures = {
     userAPI: UserAPI;
 };
 
+const baseURL = 'https://api.practicesoftwaretesting.com';
+
 export const apiTest = base.extend<APIFixtures>({
     apiClient: async ({ request }, use) => {
         const apiClient = new BaseAPI(
-            request,
-            'https://api.practicesoftwaretesting.com'
+            request, baseURL
         );
 
         await use(apiClient);

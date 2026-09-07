@@ -1,6 +1,6 @@
-import { test } from '../../src/fixtures/test.fixture';
+import { test } from '../../../src/fixtures/test.fixture'
 
-test.describe("Login page", () => {
+test.describe('Login page', () => {
   test('user can login successfully', async ({ homePage, userAPI, customer }) => {
     // Create new customer via API
     await userAPI.registerCustomer(customer);

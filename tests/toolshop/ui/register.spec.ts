@@ -1,6 +1,6 @@
-import { test, expect } from '../../src/fixtures/test.fixture';
+import { test, expect } from '../../../src/fixtures/test.fixture';
 
-test.describe("Register new account", () => {
+test.describe('Register New Account', () => {
   test('user can register a new account', async ({ homePage, customer }) => {
     // Create a new account
     await homePage.goto();
