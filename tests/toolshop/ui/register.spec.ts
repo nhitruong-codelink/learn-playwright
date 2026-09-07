@@ -11,7 +11,7 @@ test.describe('Register New Account', () => {
 
     // Login with the newly created account
     const myAccountPage = await loginPage.login(customer.email, customer.password);
-    await myAccountPage.verifyMyAccountPageIsOpen();
-    await myAccountPage.verifyUserIsLoggedIn(customer.first_name, customer.last_name);
+    await expect(myAccountPage.pageTitle).toHaveText('My account');
+    await expect(myAccountPage.navMenu).toHaveText(`${customer.first_name} ${customer.last_name}`);
   });
 });

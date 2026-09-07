@@ -1,4 +1,4 @@
-import { test } from '../../../src/fixtures/test.fixture'
+import { test, expect } from '../../../src/fixtures/test.fixture'
 
 test.describe('Login page', () => {
   test('user can login successfully', async ({ homePage, userAPI, customer }) => {
@@ -11,6 +11,6 @@ test.describe('Login page', () => {
     const myAccountPage = await loginPage.login(customer.email, customer.password);
 
     // Verify the user is logged in successfully
-    await myAccountPage.verifyUserIsLoggedIn(customer.first_name, customer.last_name);
+    await expect(myAccountPage.navMenu).toHaveText(`${customer.first_name} ${customer.last_name}`);
   });
 });
