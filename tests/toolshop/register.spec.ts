@@ -1,9 +1,9 @@
 import { test, expect } from '../../src/fixtures/test.fixture';
-import { customer } from '../../src/data/customer';
 
-test('user can register a new account and use it to login', async ({ homePage }) => {
-    await homePage.goto();
+test.describe("Register new account", () => {
+  test('user can register a new account', async ({ homePage, customer }) => {
     // Create a new account
+    await homePage.goto();
     const loginPage = await homePage.goToLogin();
     const registrationPage = await loginPage.goToRegistrationPage();
     await registrationPage.registerCustomer(customer);
@@ -11,5 +11,7 @@ test('user can register a new account and use it to login', async ({ homePage })
 
     // Login with the newly created account
     const myAccountPage = await loginPage.login(customer.email, customer.password);
-    await expect(myAccountPage.pageTitle).toHaveText('My account');
+    await myAccountPage.verifyMyAccountPageIsOpen();
+    await myAccountPage.verifyUserIsLoggedIn(customer.first_name, customer.last_name);
   });
+});

@@ -4,7 +4,7 @@ export class BaseAPI {
   constructor(
     private request: APIRequestContext,
     private baseURL: string
-  ) {}
+  ) { }
 
   async post<T>(endpoint: string, data: unknown) {
     const response = await this.request.post(

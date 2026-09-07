@@ -1,13 +1,16 @@
-import { test, expect } from '../../src/fixtures/test.fixture'
-import { customer } from '../../src/data/customer';
+import { test } from '../../src/fixtures/test.fixture';
 
-
-test('user can login successfully', async ({ homePage, userAPI }) => {
-  // Create new customer via API
+test.describe("Login page", () => {
+  test('user can login successfully', async ({ homePage, userAPI, customer }) => {
+    // Create new customer via API
     await userAPI.registerCustomer(customer);
 
+    // Login
     await homePage.goto();
     const loginPage = await homePage.goToLogin();
-    const myAccountPage = await loginPage.login(customer.email,customer.password);
-    await expect(myAccountPage.pageTitle).toHaveText('My account')
+    const myAccountPage = await loginPage.login(customer.email, customer.password);
+
+    // Verify the user is logged in successfully
+    await myAccountPage.verifyUserIsLoggedIn(customer.first_name, customer.last_name);
   });
+});
