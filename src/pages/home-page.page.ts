@@ -10,12 +10,14 @@ export class HomePage extends BasePage {
     readonly signinLink: Locator;
     readonly cards: Locator;
     readonly nextPageButton: Locator;
+    readonly filteredCards: Locator;
 
     constructor(page: Page) {
         super(page);
         this.signinLink = page.locator('[data-test="nav-sign-in"]');
         this.cards = page.locator('[data-test="product-card"]');
         this.nextPageButton = page.locator('[data-test="pagination-next"]');
+        this.filteredCards = page.locator('[data-test="filter_completed"]');
     }
 
     getFilterCheckbox(filterData: string): Locator {
@@ -47,9 +49,11 @@ export class HomePage extends BasePage {
                     },
                 });
             }
-            if (await this.nextPageButton.isHidden()) break;
-            if (await this.nextPageButton.isDisabled()) break;               
-            await this.nextPageButton.click();
+            if (await this.filteredCards.isVisible()) {
+                if (await this.nextPageButton.isHidden()) break;
+                if (await this.nextPageButton.isDisabled()) break;
+                await this.nextPageButton.click();
+            }
         }
         return products;
     }
