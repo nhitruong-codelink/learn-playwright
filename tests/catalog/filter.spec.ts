@@ -7,7 +7,7 @@ test.describe('Product Grid Filtering', () => {
         await pages.home.goto();
     });
 
-    test('filter products by a single sub-category', { tag: '@toolshop' },
+    test('filter products by a single sub-category', { tag: '@regression' },
         async ({ pages, productAPI }) => {
             await pages.home.filter(filter.HAMMER);
             await expect(pages.home.getFilterCheckbox(filter.HAMMER)).toBeChecked();

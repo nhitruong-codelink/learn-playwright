@@ -4,7 +4,7 @@ import { createCustomer } from '../../src/data/customer';
 
 
 test.describe('Checkout flow', () => {
-    test('checkout creates an order in the database', { tag: ['@toolshop', '@e2e'], },
+    test('checkout creates an order in the database', { tag: ['@regression', '@e2e'], },
         async ({ pages, userAPI, db }) => {
             const customer = createCustomer();
 
