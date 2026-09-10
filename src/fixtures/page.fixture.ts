@@ -1,19 +1,32 @@
 import { test as base } from '@playwright/test';
-import { BasePage } from '../pages/base-page.page';
+
+import { LoginPage } from '../pages/login-page.page';
+import { RegistrationPage } from '../pages/registration-page.page';
 import { HomePage } from '../pages/home-page.page';
+import { ProductPage } from '../pages/product-page.page';
+import { MyAccountPage } from '../pages/my-account-page.page';
+import { CheckoutPage } from '../pages/checkout-page.page';
 
 export type PageFixtures = {
-    homePage: HomePage;
-    basePage: BasePage;
+    pages: {
+        login: LoginPage;
+        registration: RegistrationPage;
+        home: HomePage;
+        product: ProductPage;
+        myaccount: MyAccountPage;
+        checkout: CheckoutPage;
+    };
 };
 
 export const pageTest = base.extend<PageFixtures>({
-    homePage: async ({ page }, use) => {
-        const homePage = new HomePage(page);
-        await use(homePage);
-    },
-    basePage: async ({ page }, use) => {
-        const basePage = new BasePage(page);
-        await use(basePage);
+    pages: async ({ page }, use) => {
+        await use({
+            login: new LoginPage(page),
+            registration: new RegistrationPage(page),
+            home: new HomePage(page),
+            product: new ProductPage(page),
+            myaccount: new MyAccountPage(page),
+            checkout: new CheckoutPage(page),
+        });
     },
 });
