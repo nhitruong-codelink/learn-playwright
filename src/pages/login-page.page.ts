@@ -1,7 +1,5 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './base-page.page';
-import { RegistrationPage } from './registration-page.page';
-import { MyAccountPage } from './my-account-page.page';
 
 export class LoginPage extends BasePage {
 
@@ -25,12 +23,9 @@ export class LoginPage extends BasePage {
         await this.emailInput.fill(email);
         await this.passwordInput.fill(password);
         await this.loginButton.click();
-
-        return new MyAccountPage(this.page);
     }
 
     async goToRegistrationPage() {
         await this.registerLink.click();
-        return new RegistrationPage(this.page);
     }
 }

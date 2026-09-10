@@ -1,7 +1,7 @@
-import { Page, Locator, expect } from '@playwright/test'
+import { Page, Locator } from '@playwright/test'
 import { BasePage } from './base-page.page'
 import { type User } from '../data/customer';
-import { LoginPage } from './login-page.page';
+import { fillOrAssertNotEmpty } from '../utils/form.util';
 
 export class RegistrationPage extends BasePage {
 
@@ -20,7 +20,7 @@ export class RegistrationPage extends BasePage {
     readonly registerButton: Locator;
 
     constructor(page: Page) {
-        super(page)
+        super(page);
 
         this.firstNameInput = page.locator('[data-test="first-name"]');
         this.lastNameInput = page.locator('[data-test="last-name"]');
@@ -45,34 +45,14 @@ export class RegistrationPage extends BasePage {
         await this.postalCodeInput.fill(customer.address.postal_code);
         await this.houseNumberInput.fill(customer.address.house_numnber);
 
-        if (customer.address.street) {
-            await this.streetInput.fill(customer.address.street);
-        }
-        else {
-            await expect(this.streetInput).not.toBeEmpty();
-        }
-        if (customer.address.city) {
-            await this.cityInput.fill(customer.address.city);
-        }
-        else {
-            await expect(this.cityInput).not.toBeEmpty();
-
-        }
-        if (customer.address.state) {
-            await this.stateInput.fill(customer.address.state);
-        }
-        else {
-            await expect(this.stateInput).not.toBeEmpty();
-        }
+        await fillOrAssertNotEmpty(this.streetInput, customer.address.street);
+        await fillOrAssertNotEmpty(this.cityInput, customer.address.city);
+        await fillOrAssertNotEmpty(this.stateInput, customer.address.state);
 
         await this.phoneInput.fill(customer.phone);
         await this.emailInput.fill(customer.email);
         await this.passwordInput.fill(customer.password);
 
         await this.registerButton.click();
-
-        return new LoginPage(this.page);
     }
-
-
 }

@@ -1,32 +1,33 @@
-import { Page, Locator } from '@playwright/test'
+import { Page, Locator, expect } from '@playwright/test'
 import { BasePage } from './base-page.page';
-import { LoginPage } from './login-page.page';
 import { FilterData } from '../data/enum/filter.enum';
 import { Product } from '../data/product';
 
-
 export class HomePage extends BasePage {
 
-    readonly signinLink: Locator;
     readonly cards: Locator;
     readonly nextPageButton: Locator;
     readonly filteredCards: Locator;
+    readonly searchInput: Locator;
+    readonly searchButton: Locator;
+    readonly searchCaption: Locator;
 
     constructor(page: Page) {
         super(page);
-        this.signinLink = page.locator('[data-test="nav-sign-in"]');
         this.cards = page.locator('[data-test="product-card"]');
         this.nextPageButton = page.locator('[data-test="pagination-next"]');
         this.filteredCards = page.locator('[data-test="filter_completed"]');
+        this.searchInput = page.locator('[data-test="search-query"]');
+        this.searchButton = page.locator('[data-test="search-submit"]');
+        this.searchCaption = page.locator('[data-test="search-caption"]');
     }
 
     getFilterCheckbox(filterData: string): Locator {
         return this.page.getByRole('checkbox', { name: filterData, exact: true });
     }
 
-    async goToLogin() {
-        await this.signinLink.click();
-        return new LoginPage(this.page);
+    getProductCard(productName) {
+        return this.page.getByRole('heading', { name: productName, exact: true });
     }
 
     async filter(...items: FilterData[]) {
@@ -56,6 +57,16 @@ export class HomePage extends BasePage {
             }
         }
         return products;
+    }
+
+    async search(productName) {
+        await this.searchInput.fill(productName);
+        await this.searchButton.click();
+        await expect(this.searchCaption).toBeVisible();
+    }
+
+    async openProduct(productName) {
+        await this.getProductCard(productName).click();
     }
 
 }
