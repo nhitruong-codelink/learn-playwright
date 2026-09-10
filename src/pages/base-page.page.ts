@@ -1,25 +1,39 @@
-import { Locator, Page } from '@playwright/test';
-import { LoginPage } from './login-page.page';
+import { Page, Locator } from '@playwright/test';
 
 export class BasePage {
-    
+
     protected readonly page;
-    protected readonly url = 'https://practicesoftwaretesting.com/';
 
-    readonly signinLink: Locator;
+    readonly homeTab: Locator;
+    readonly signinTab: Locator;
+    readonly cartTab: Locator; 
+    readonly contactTab: Locator;
 
-    constructor(page: Page){
+    constructor(page: Page) {
         this.page = page
-
-        this.signinLink = page.locator('[data-test="nav-sign-in"]');
+        this.signinTab = page.locator('[data-test="nav-sign-in"]');
+        this.homeTab = page.locator('[data-test="nav-home"]');
+        this.cartTab = page.locator('[data-test="nav-cart"]');
+        this.contactTab = page.locator('[data-test="nav-contact"]');
     }
 
     async goto() {
-        await this.page.goto(this.url);
+        await this.page.goto('/');
+    }
+
+    async goToHome() {
+        await this.homeTab.click();
     }
 
     async goToLogin() {
-        await this.signinLink.click();
-        return new LoginPage(this.page);
+        await this.signinTab.click();
+    }
+
+    async goToCart() {
+        await this.cartTab.click();
+    }
+
+    async goToContact() {
+        await this.contactTab.click();
     }
 }
