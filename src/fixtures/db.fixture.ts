@@ -11,15 +11,12 @@ export type DBFixtures = {
 
 export const dbTest = base.extend<DBFixtures>({
     db: async ({ }, use) => {
-
         const client = new DatabaseClient();
-
         // Give DatabaseClient and query modules to the test
         await use({
             client,
             invoice: new InvoiceQueries(client),
         });
-
         // Cleanup after test
         await client.close();
     },

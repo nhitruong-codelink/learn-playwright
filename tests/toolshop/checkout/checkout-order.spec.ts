@@ -1,10 +1,13 @@
 import { test, expect } from '../../../src/fixtures/test.fixture';
 import { PaymentMethod } from '../../../src/data/enum/payment.enum';
+import { createCustomer } from '../../../src/data/customer';
 
 
-test.describe('E2E test', () => {
+test.describe('Checkout flow', () => {
     test('checkout creates an order in the database', { tag: ['@toolshop', '@e2e'], },
-        async ({ pages, customer, userAPI, db }) => {
+        async ({ pages, userAPI, db }) => {
+            const customer = createCustomer();
+
             // Create new customer via API
             await userAPI.registerCustomer(customer);
 

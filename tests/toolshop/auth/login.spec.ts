@@ -1,8 +1,12 @@
 import { test, expect } from '../../../src/fixtures/test.fixture'
+import { createCustomer } from '../../../src/data/customer';
+
 
 test.describe('Login page', () => {
   test('user can login successfully', { tag: '@toolshop' },
-    async ({ pages, userAPI, customer }) => {
+    async ({ pages, userAPI }) => {
+      const customer = createCustomer();
+
       // Create new customer via API
       await userAPI.registerCustomer(customer);
 

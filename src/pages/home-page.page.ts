@@ -11,6 +11,7 @@ export class HomePage extends BasePage {
     readonly searchInput: Locator;
     readonly searchButton: Locator;
     readonly searchCaption: Locator;
+    readonly cardNames: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -20,6 +21,7 @@ export class HomePage extends BasePage {
         this.searchInput = page.locator('[data-test="search-query"]');
         this.searchButton = page.locator('[data-test="search-submit"]');
         this.searchCaption = page.locator('[data-test="search-caption"]');
+        this.cardNames = page.locator('[data-test="product-name"]');
     }
 
     getFilterCheckbox(filterData: string): Locator {

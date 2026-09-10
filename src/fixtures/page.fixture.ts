@@ -6,6 +6,7 @@ import { HomePage } from '../pages/home-page.page';
 import { ProductPage } from '../pages/product-page.page';
 import { MyAccountPage } from '../pages/my-account-page.page';
 import { CheckoutPage } from '../pages/checkout-page.page';
+import { ContactPage } from '../pages/contact-page.page';
 
 export type PageFixtures = {
     pages: {
@@ -15,6 +16,7 @@ export type PageFixtures = {
         product: ProductPage;
         myaccount: MyAccountPage;
         checkout: CheckoutPage;
+        contact: ContactPage;
     };
 };
 
@@ -27,6 +29,7 @@ export const pageTest = base.extend<PageFixtures>({
             product: new ProductPage(page),
             myaccount: new MyAccountPage(page),
             checkout: new CheckoutPage(page),
+            contact: new ContactPage(page),
         });
     },
 });
