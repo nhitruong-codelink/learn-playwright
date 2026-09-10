@@ -1,6 +1,6 @@
-import { test, expect } from '../../../src/fixtures/test.fixture'
-import { FilterData as filter, FilterDataMap as mapping } from '../../../src/data/enum/filter.enum';
-import { Product } from '../../../src/data/product';
+import { test, expect } from '../../src/fixtures/test.fixture'
+import { FilterData as filter, FilterDataMap as mapping } from '../../src/data/enum/filter.enum';
+import { Product } from '../../src/data/product';
 
 test.describe('Product Grid Filtering', () => {
     test.beforeEach(async ({ pages }) => {

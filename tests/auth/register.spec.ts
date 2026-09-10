@@ -1,5 +1,5 @@
-import { test, expect } from '../../../src/fixtures/test.fixture';
-import { createCustomer } from '../../../src/data/customer';
+import { test, expect } from '../../src/fixtures/test.fixture';
+import { createCustomer } from '../../src/data/customer';
 
 test.describe('Register New Account', () => {
   test('user can register a new account', { tag: '@toolshop' },

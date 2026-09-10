@@ -1,6 +1,6 @@
-import { test, expect } from '../../../src/fixtures/test.fixture';
-import { PaymentMethod } from '../../../src/data/enum/payment.enum';
-import { createCustomer } from '../../../src/data/customer';
+import { test, expect } from '../../src/fixtures/test.fixture';
+import { PaymentMethod } from '../../src/data/enum/payment.enum';
+import { createCustomer } from '../../src/data/customer';
 
 
 test.describe('Checkout flow', () => {

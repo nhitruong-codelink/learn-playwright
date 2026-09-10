@@ -15,7 +15,6 @@ export const apiTest = base.extend<APIFixtures>({
         const apiClient = new BaseAPI(
             request, envConfig.apiBaseURL
         );
-
         await use(apiClient);
     },
 

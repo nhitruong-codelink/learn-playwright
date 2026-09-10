@@ -1,5 +1,5 @@
-import { test, expect } from '../../../src/fixtures/test.fixture'
-import { createCustomer } from '../../../src/data/customer';
+import { test, expect } from '../../src/fixtures/test.fixture'
+import { createCustomer } from '../../src/data/customer';
 
 
 test.describe('Login page', () => {
