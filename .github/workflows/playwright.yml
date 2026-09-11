@@ -1,9 +1,10 @@
 name: Playwright Tests
+
 on:
   push:
     branches: [ main, master, development ]
   pull_request:
-    branches: [ main, master, development ]
+    
 jobs:
   test:
     timeout-minutes: 60
@@ -67,26 +68,70 @@ jobs:
       run: npm ci
 
     - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+      run: npx playwright install --with-deps chromium
 
     - name: Run Playwright tests
-      run: npx playwright test
+      run: npx playwright test --project=chromium
 
-    - uses: actions/upload-artifact@v4
+    - name: Upload blob report
       if: ${{ !cancelled() }}
+      uses: actions/upload-artifact@v4
       with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+        name: blob-report
+        path: blob-report
+        retention-days: 7
 
-    - uses: actions/upload-artifact@v4
+    - name: Upload allure results
       if: ${{ !cancelled() }}
+      uses: actions/upload-artifact@v4
       with:
         name: allure-results
-        path: allure-results/
-        retention-days: 30
+        path: allure-results
+        retention-days: 7
 
     - name: Stop Toolshop app
       if: always()
       working-directory: toolshop-app
       run: docker compose down -v
+
+  merge-report:
+    if: ${{ !cancelled() }}
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - run: npm ci
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: blob-report
+          pattern: blob-report
+
+      - run: npx playwright merge-reports --reporter html ./blob-report/blob-report
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-report
+          path: playwright-report
+          retention-days: 14
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: allure-results
+          pattern: allure-results
+
+      - name: Generate Allure report
+        run: npx allure-commandline generate ./allure-results/allure-results --clean -o ./allure-report
+
+      - name: Upload Allure report
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report
+          retention-days: 14
