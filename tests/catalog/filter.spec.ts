@@ -7,7 +7,7 @@ test.describe('Product Grid Filtering', () => {
         await pages.home.goto();
     });
 
-    test('filter products by a single sub-category', { tag: '@toolshop' },
+    test('filter products by a single sub-category', { tag: '@regression' },
         async ({ pages, productAPI }) => {
             await pages.home.filter(filter.HAMMER);
             await expect(pages.home.getFilterCheckbox(filter.HAMMER)).toBeChecked();
@@ -29,7 +29,7 @@ test.describe('Product Grid Filtering', () => {
             };
         });
 
-    test('all sub-categories should be checked when parent category is checked', { tag: '@toolshop' },
+    test('all sub-categories should be checked when parent category is checked', { tag: '@regression' },
         async ({ pages }) => {
             await pages.home.filter(filter.POWER_TOOLS);
             for (const sub of mapping[filter.POWER_TOOLS]) {

@@ -2,7 +2,7 @@ import { test, expect } from '../../src/fixtures/test.fixture';
 import { createCustomer } from '../../src/data/customer';
 
 test.describe('Register New Account', () => {
-  test('user can register a new account', { tag: '@toolshop' },
+  test('user can register a new account', { tag: '@regression' },
     async ({ pages }) => {
       const customer = createCustomer();
 
