@@ -29,7 +29,7 @@ test.describe('Product Grid Filtering', () => {
             };
         });
 
-    test('all sub-categories should be checked when parent category is checked', { tag: '@toolshop' },
+    test('all sub-categories should be checked when parent category is checked', { tag: '@regression' },
         async ({ pages }) => {
             await pages.home.filter(filter.POWER_TOOLS);
             for (const sub of mapping[filter.POWER_TOOLS]) {

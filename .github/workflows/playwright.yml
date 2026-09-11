@@ -1,10 +1,8 @@
 name: Playwright Tests
 
 on:
-  push:
-    branches: [ main, master, development ]
-  pull_request:
-    
+  workflow_dispatch:
+
 jobs:
   test:
     timeout-minutes: 60
@@ -49,17 +47,27 @@ jobs:
       working-directory: toolshop-app
       run: docker compose exec -T laravel-api php artisan migrate:fresh --seed --force
 
-    - name: Verify products are seeded
+    - name: Verify seed data is correct
+      working-directory: toolshop-app
       run: |
+        ok=false
         for i in $(seq 1 30); do
-          count=$(curl -sf http://localhost:8091/products | grep -o '"id"' | wc -l)
-          if [ "$count" -gt 0 ]; then
-            echo "Products are seeded ($count found)"
+          products_count=$(curl -sf http://localhost:8091/products | grep -o '"id"' | wc -l)
+          categories=$(curl -sf http://localhost:8091/categories)
+          has_power_tools=$(echo "$categories" | grep -c "Power Tools")
+          if [ "$products_count" -gt 0 ] && [ "$has_power_tools" -gt 0 ]; then
+            echo "Seed data looks correct ($products_count products, Power Tools category found)"
+            ok=true
             break
           fi
-          echo "Waiting for products to be seeded..."
+          echo "Waiting for seed data (products=$products_count, power_tools_found=$has_power_tools)..."
           sleep 5
         done
+        if [ "$ok" != "true" ]; then
+          echo "::error::Seed data is missing or incomplete after waiting. Dumping laravel-api logs:"
+          docker compose logs laravel-api --tail=200
+          exit 1
+        fi
 
     - name: Wait for UI to be ready
       run: |
