@@ -9,6 +9,8 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    env:
+      DISABLE_LOGGING: "false"
     steps:
     - uses: actions/checkout@v4
 
@@ -18,11 +20,13 @@ jobs:
         repository: testsmith-io/practice-software-testing
         path: toolshop-app
 
+    - name: Remove obsolete compose version attribute
+      working-directory: toolshop-app
+      run: sed -i '/^version:/d' docker-compose.yml docker-compose.override.yml
+
     - name: Start Toolshop app (UI, API, DB)
       working-directory: toolshop-app
-      env:
-        DISABLE_LOGGING: "false"
-      run: docker compose up -d --build
+      run: docker compose up -d --build laravel-api angular-ui web mariadb mailcatcher
 
     - name: Wait for API to be ready
       run: |
