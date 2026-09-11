@@ -49,6 +49,18 @@ jobs:
       working-directory: toolshop-app
       run: docker compose exec -T laravel-api php artisan migrate:fresh --seed --force
 
+    - name: Verify products are seeded
+      run: |
+        for i in $(seq 1 30); do
+          count=$(curl -sf http://localhost:8091/products | grep -o '"id"' | wc -l)
+          if [ "$count" -gt 0 ]; then
+            echo "Products are seeded ($count found)"
+            break
+          fi
+          echo "Waiting for products to be seeded..."
+          sleep 5
+        done
+
     - name: Wait for UI to be ready
       run: |
         for i in $(seq 1 60); do
