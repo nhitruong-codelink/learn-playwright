@@ -25,4 +25,31 @@ export class InvoiceQueries {
 
         return orders[0];
     }
+
+    async deleteOrderDataByEmail(email: string): Promise<void> {
+        await this.db.execute(
+            `DELETE p FROM payments p
+             JOIN invoices i ON i.id = p.invoice_id
+             JOIN users u ON u.id = i.user_id
+             WHERE u.email = ?`,
+            [email]
+        );
+
+        await this.db.execute(
+            `DELETE ii FROM invoice_items ii
+             JOIN invoices i ON i.id = ii.invoice_id
+             JOIN users u ON u.id = i.user_id
+             WHERE u.email = ?`,
+            [email]
+        );
+
+        await this.db.execute(
+            `DELETE i FROM invoices i
+             JOIN users u ON u.id = i.user_id
+             WHERE u.email = ?`,
+            [email]
+        );
+
+        await this.db.execute(`DELETE FROM users WHERE email = ?`, [email]);
+    }
 }

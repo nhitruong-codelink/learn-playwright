@@ -2,9 +2,18 @@ import { test, expect } from '../../src/fixtures/test.fixture';
 import { createCustomer } from '../../src/data/customer';
 
 test.describe('Register New Account', () => {
+  let customerEmail: string;
+
+  test.afterEach(async ({ db }) => {
+    if (customerEmail) {
+      await db.user.deleteUserByEmail(customerEmail);
+    }
+  });
+
   test('user can register a new account', { tag: '@regression' },
     async ({ pages }) => {
       const customer = createCustomer();
+      customerEmail = customer.email;
 
       // Create a new account
       await pages.home.goto();

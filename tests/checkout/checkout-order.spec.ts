@@ -4,9 +4,18 @@ import { createCustomer } from '../../src/data/customer';
 
 
 test.describe('Checkout flow', () => {
+    let customerEmail: string;
+
+    test.afterEach(async ({ db }) => {
+        if (customerEmail) {
+            await db.invoice.deleteOrderDataByEmail(customerEmail);
+        }
+    });
+
     test('checkout creates an order in the database', { tag: ['@regression', '@e2e'], },
         async ({ pages, userAPI, db }) => {
             const customer = createCustomer();
+            customerEmail = customer.email;
 
             // Create new customer via API
             await userAPI.registerCustomer(customer);
