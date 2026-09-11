@@ -1,4 +1,4 @@
-name: Playwright Tests
+name: Toolshop Tests
 
 on:
   push:
@@ -93,7 +93,7 @@ jobs:
       run: npx playwright install --with-deps chromium
 
     - name: Run Playwright tests
-      run: npx playwright test --project=chromium
+      run: npx playwright test --project=chromium --grep @toolshop
 
     - name: Upload blob report
       if: ${{ !cancelled() }}

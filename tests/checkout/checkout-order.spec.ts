@@ -12,7 +12,7 @@ test.describe('Checkout flow', () => {
         }
     });
 
-    test('checkout creates an order in the database', { tag: '@e2e' },
+    test('checkout creates an order in the database', { tag: '@toolshop' },
         async ({ pages, userAPI, db }) => {
             const customer = createCustomer();
             customerEmail = customer.email;
