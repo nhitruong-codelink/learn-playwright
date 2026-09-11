@@ -3,7 +3,7 @@ import { createCustomer } from '../../src/data/customer';
 
 
 test.describe('Login page', () => {
-  test('user can login successfully', { tag: '@regression' },
+  test('user can login successfully', { tag: '@smoke' },
     async ({ pages, userAPI }) => {
       const customer = createCustomer();
 
