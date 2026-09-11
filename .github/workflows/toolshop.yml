@@ -1,8 +1,8 @@
 name: Toolshop Tests
 
 on:
-  push:
-    branches: [ development ]
+  # push:
+  #   branches: [ development ]
   workflow_dispatch:
 
 jobs:
