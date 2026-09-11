@@ -32,6 +32,18 @@ jobs:
           sleep 5
         done
 
+    - name: Wait for Composer install to finish
+      working-directory: toolshop-app
+      run: |
+        for i in $(seq 1 60); do
+          if docker compose exec -T laravel-api test -f /var/www/vendor/autoload.php; then
+            echo "Composer dependencies are installed"
+            break
+          fi
+          echo "Waiting for composer install..."
+          sleep 5
+        done
+
     - name: Seed database
       working-directory: toolshop-app
       run: docker compose exec -T laravel-api php artisan migrate:fresh --seed --force
