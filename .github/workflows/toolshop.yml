@@ -22,7 +22,7 @@ jobs:
       working-directory: toolshop-app
       env:
         DISABLE_LOGGING: "false"
-      run: docker compose -f docker-compose.yml up -d --build
+      run: docker compose up -d --build
 
     - name: Wait for API to be ready
       run: |
@@ -49,33 +49,33 @@ jobs:
 
     - name: Seed database
       working-directory: toolshop-app
-      run: docker compose exec -T laravel-api php artisan migrate:fresh --seed --force
+      run: docker compose exec -T laravel-api php artisan migrate:refresh --seed
 
-    # - name: Verify seed data is correct
-    #   working-directory: toolshop-app
-    #   run: |
-    #     ok=false
-    #     for i in $(seq 1 30); do
-    #       products_count=$(curl -sf http://localhost:8091/products 2>/dev/null | grep -o '"id"' | wc -l || true)
-    #       products_count=${products_count:-0}
-    #       categories=$(curl -sf http://localhost:8091/categories 2>/dev/null || true)
-    #       has_power_tools=$(echo "$categories" | grep -c "Power Tools" || true)
-    #       has_power_tools=${has_power_tools:-0}
-    #       if [ "$products_count" -gt 0 ] && [ "$has_power_tools" -gt 0 ]; then
-    #         echo "Seed data looks correct ($products_count products, Power Tools category found)"
-    #         ok=true
-    #         break
-    #       fi
-    #       echo "Waiting for seed data (products=$products_count, power_tools_found=$has_power_tools)..."
-    #       sleep 5
-    #     done
-    #     if [ "$ok" != "true" ]; then
-    #       echo "::error::Seed data is missing or incomplete after waiting. Dumping laravel-api logs:"
-    #       docker compose logs laravel-api --tail=200
-    #       echo "::error::Dumping Laravel application log (storage/logs/laravel.log):"
-    #       docker compose exec -T laravel-api sh -c 'tail -n 200 storage/logs/laravel.log' || true
-    #       exit 1
-    #     fi
+    - name: Verify seed data is correct
+      working-directory: toolshop-app
+      run: |
+        ok=false
+        for i in $(seq 1 30); do
+          products_count=$(curl -sf http://localhost:8091/products 2>/dev/null | grep -o '"id"' | wc -l || true)
+          products_count=${products_count:-0}
+          categories=$(curl -sf http://localhost:8091/categories 2>/dev/null || true)
+          has_power_tools=$(echo "$categories" | grep -c "Power Tools" || true)
+          has_power_tools=${has_power_tools:-0}
+          if [ "$products_count" -gt 0 ] && [ "$has_power_tools" -gt 0 ]; then
+            echo "Seed data looks correct ($products_count products, Power Tools category found)"
+            ok=true
+            break
+          fi
+          echo "Waiting for seed data (products=$products_count, power_tools_found=$has_power_tools)..."
+          sleep 5
+        done
+        if [ "$ok" != "true" ]; then
+          echo "::error::Seed data is missing or incomplete after waiting. Dumping laravel-api logs:"
+          docker compose logs laravel-api --tail=200
+          echo "::error::Dumping Laravel application log (storage/logs/laravel.log):"
+          docker compose exec -T laravel-api sh -c 'tail -n 200 storage/logs/laravel.log' || true
+          exit 1
+        fi
 
     - name: Wait for UI to be ready
       run: |
