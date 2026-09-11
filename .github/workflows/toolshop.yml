@@ -54,9 +54,11 @@ jobs:
       run: |
         ok=false
         for i in $(seq 1 30); do
-          products_count=$(curl -sf http://localhost:8091/products | grep -o '"id"' | wc -l)
-          categories=$(curl -sf http://localhost:8091/categories)
-          has_power_tools=$(echo "$categories" | grep -c "Power Tools")
+          products_count=$(curl -sf http://localhost:8091/products 2>/dev/null | grep -o '"id"' | wc -l || true)
+          products_count=${products_count:-0}
+          categories=$(curl -sf http://localhost:8091/categories 2>/dev/null || true)
+          has_power_tools=$(echo "$categories" | grep -c "Power Tools" || true)
+          has_power_tools=${has_power_tools:-0}
           if [ "$products_count" -gt 0 ] && [ "$has_power_tools" -gt 0 ]; then
             echo "Seed data looks correct ($products_count products, Power Tools category found)"
             ok=true
