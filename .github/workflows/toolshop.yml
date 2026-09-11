@@ -70,6 +70,8 @@ jobs:
         if [ "$ok" != "true" ]; then
           echo "::error::Seed data is missing or incomplete after waiting. Dumping laravel-api logs:"
           docker compose logs laravel-api --tail=200
+          echo "::error::Dumping Laravel application log (storage/logs/laravel.log):"
+          docker compose exec -T laravel-api sh -c 'tail -n 200 storage/logs/laravel.log' || true
           exit 1
         fi
 
