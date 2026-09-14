@@ -24,7 +24,7 @@ jobs:
 
     - name: Start Toolshop app (UI, API, DB)
       working-directory: toolshop-app
-      run: docker compose up -d --build laravel-api angular-ui web mariadb mailcatcher composer
+      run: docker compose up -d --build laravel-api angular-ui web mariadb mailcatcher composer phpmyadmin
 
     - name: Wait for API to be ready
       run: |
