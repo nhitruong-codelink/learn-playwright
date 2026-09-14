@@ -42,18 +42,23 @@ jobs:
       run: |
         ok=false
         for i in $(seq 1 60); do
-          if docker compose exec -T laravel-api test -f /var/www/vendor/autoload.php; then
-            echo "Composer dependencies are installed"
+          # The "composer" service runs `composer install && chown -R www-data /var/www && chmod 777 /var/www`.
+          # autoload.php exists as soon as `composer install` finishes, but storage/bootstrap-cache
+          # may still be un-writable until the trailing chown/chmod completes. Wait for both.
+          if docker compose exec -T laravel-api test -f /var/www/vendor/autoload.php \
+            && docker compose exec -T laravel-api sh -c 'test -w storage/logs && test -w bootstrap/cache'; then
+            echo "Composer dependencies are installed and storage is writable"
             ok=true
             break
           fi
-          echo "Waiting for composer install..."
+          echo "Waiting for composer install / permissions..."
           sleep 5
         done
         if [ "$ok" != "true" ]; then
-          echo "::error::vendor/autoload.php not found after waiting. Dumping composer and laravel-api logs:"
+          echo "::error::vendor/autoload.php missing or storage not writable after waiting. Dumping composer and laravel-api logs:"
           docker compose logs composer --tail=200 || true
           docker compose logs laravel-api --tail=200 || true
+          docker compose exec -T laravel-api sh -c 'id; ls -la storage storage/logs bootstrap/cache' || true
           exit 1
         fi
 
@@ -116,8 +121,12 @@ jobs:
         if [ "$ok" != "true" ]; then
           echo "::error::Seed data is missing or incomplete after waiting. Dumping laravel-api logs:"
           docker compose logs laravel-api --tail=200
+          echo "::error::Raw /products response body:"
+          curl -sv http://localhost:8091/products 2>&1 || true
           echo "::error::Dumping Laravel application log (storage/logs/laravel.log):"
           docker compose exec -T laravel-api sh -c 'tail -n 200 storage/logs/laravel.log' || true
+          echo "::error::Filesystem permissions inside laravel-api:"
+          docker compose exec -T laravel-api sh -c 'id; ls -la storage storage/logs bootstrap/cache' || true
           exit 1
         fi
 
