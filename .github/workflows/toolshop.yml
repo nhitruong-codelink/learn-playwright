@@ -42,22 +42,32 @@ jobs:
       run: |
         ok=false
         for i in $(seq 1 60); do
-          # The "composer" service runs `composer install && chown -R www-data /var/www && chmod 777 /var/www`.
-          # autoload.php exists as soon as `composer install` finishes, but storage/bootstrap-cache
-          # may still be un-writable until the trailing chown/chmod completes. Wait for both.
-          if docker compose exec -T laravel-api test -f /var/www/vendor/autoload.php \
-            && docker compose exec -T laravel-api sh -c 'test -w storage/logs && test -w bootstrap/cache'; then
-            echo "Composer dependencies are installed and storage is writable"
+          if docker compose exec -T laravel-api test -f /var/www/vendor/autoload.php; then
+            echo "Composer dependencies are installed"
             ok=true
             break
           fi
-          echo "Waiting for composer install / permissions..."
+          echo "Waiting for composer install..."
           sleep 5
         done
         if [ "$ok" != "true" ]; then
-          echo "::error::vendor/autoload.php missing or storage not writable after waiting. Dumping composer and laravel-api logs:"
+          echo "::error::vendor/autoload.php not found after waiting. Dumping composer and laravel-api logs:"
           docker compose logs composer --tail=200 || true
           docker compose logs laravel-api --tail=200 || true
+          exit 1
+        fi
+
+    - name: Fix storage/bootstrap-cache permissions
+      working-directory: toolshop-app
+      run: |
+        # The upstream "composer" service runs `chown -R www-data /var/www && chmod 777 /var/www`
+        # (no -R on chmod) inside the *composer* image, where www-data has a different UID than
+        # in laravel-api (which remaps www-data to UID 1000). This leaves storage/bootstrap/cache
+        # owned by the wrong UID with non-writable permissions for the laravel-api process.
+        docker compose exec -T -u root laravel-api sh -c \
+          'chown -R www-data:www-data storage bootstrap/cache && chmod -R 775 storage bootstrap/cache'
+        if ! docker compose exec -T laravel-api sh -c 'test -w storage/logs && test -w bootstrap/cache'; then
+          echo "::error::storage/bootstrap-cache still not writable by www-data after chown/chmod fix"
           docker compose exec -T laravel-api sh -c 'id; ls -la storage storage/logs bootstrap/cache' || true
           exit 1
         fi
