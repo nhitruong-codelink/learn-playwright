@@ -57,9 +57,43 @@ jobs:
           exit 1
         fi
 
+    - name: Wait for MariaDB to be ready
+      working-directory: toolshop-app
+      run: |
+        ok=false
+        for i in $(seq 1 60); do
+          if docker compose exec -T mariadb mysqladmin ping -uroot -proot --silent > /dev/null 2>&1; then
+            echo "MariaDB is up"
+            ok=true
+            break
+          fi
+          echo "Waiting for MariaDB..."
+          sleep 5
+        done
+        if [ "$ok" != "true" ]; then
+          echo "::error::MariaDB did not become ready in time. Dumping mariadb logs:"
+          docker compose logs mariadb --tail=200 || true
+          exit 1
+        fi
+
     - name: Seed database
       working-directory: toolshop-app
-      run: docker compose exec -T laravel-api php artisan migrate:refresh --seed
+      run: |
+        ok=false
+        for i in $(seq 1 10); do
+          if docker compose exec -T laravel-api php artisan migrate:refresh --seed; then
+            echo "Database migrated and seeded"
+            ok=true
+            break
+          fi
+          echo "Seed attempt $i failed, retrying..."
+          sleep 5
+        done
+        if [ "$ok" != "true" ]; then
+          echo "::error::migrate:refresh --seed failed after retries. Dumping laravel-api logs:"
+          docker compose logs laravel-api --tail=200 || true
+          exit 1
+        fi
 
     - name: Verify seed data is correct
       working-directory: toolshop-app
