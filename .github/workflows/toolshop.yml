@@ -24,11 +24,6 @@ on:
         description: "Only this spec file, e.g. tests/checkout/checkout-order.spec.ts"
         type: string
         default: ""
-      shards:
-        description: "Shard count (use 1 for narrow filters)"
-        type: choice
-        default: "2"
-        options: ["2", "1"]
       retries:
         description: "Rerun each failing test N times (--retries)"
         type: string
@@ -52,15 +47,9 @@ env:
 
 jobs:
   test:
-    name: "test (${{ github.event.inputs.scope || 'regression' }} / ${{ github.event.inputs.browser || 'chromium' }} / shard ${{ matrix.shard }})"
+    name: "test (${{ github.event.inputs.scope || 'regression' }} / ${{ github.event.inputs.browser || 'chromium' }})"
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        # 1 shard when the dispatch picks it OR narrows to a test_name/spec (a 2-shard
-        # split of a narrow filter can leave one shard with 0 tests); push/PR keep 2.
-        shard: ${{ fromJSON((  (github.event.inputs.shards || '2') == '1' || github.event.inputs.test_name != '' || github.event.inputs.spec != ''  ) && '[1]' || '[1,2]') }}
     steps:
     - uses: actions/checkout@v4
 
@@ -224,8 +213,6 @@ jobs:
         REPEAT_EACH: ${{ github.event.inputs.repeat_each }}
         WORKERS: ${{ github.event.inputs.workers }}
         TRACE: ${{ github.event.inputs.trace }}
-        # Must match the matrix length above, incl. the narrow-filter → 1 shard rule.
-        SHARD_TOTAL: ${{ (  (github.event.inputs.shards || '2') == '1' || github.event.inputs.test_name != '' || github.event.inputs.spec != ''  ) && '1' || '2' }}
       run: |
         ARGS=()
 
@@ -250,13 +237,13 @@ jobs:
           ARGS+=(--project=chromium --grep @regression)
         fi
 
-        npx playwright test "${ARGS[@]}" --shard="${{ matrix.shard }}/${SHARD_TOTAL}"
+        npx playwright test "${ARGS[@]}"
 
     - name: Upload blob report
       if: ${{ !cancelled() }}
       uses: actions/upload-artifact@v4
       with:
-        name: blob-report-${{ matrix.shard }}
+        name: blob-report
         path: blob-report
         retention-days: 7
 
@@ -264,7 +251,7 @@ jobs:
       if: ${{ !cancelled() }}
       uses: actions/upload-artifact@v4
       with:
-        name: allure-results-${{ matrix.shard }}
+        name: allure-results
         path: allure-results
         retention-days: 7
 
@@ -288,9 +275,8 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
+          name: blob-report
           path: all-blob-reports
-          pattern: blob-report-*
-          merge-multiple: true
 
       - run: npx playwright merge-reports --reporter html ./all-blob-reports
 
@@ -303,9 +289,8 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
+          name: allure-results
           path: allure-results
-          pattern: allure-results-*
-          merge-multiple: true
 
       - name: Generate Allure report
         run: npx allure-commandline generate ./allure-results --clean -o ./allure-report
