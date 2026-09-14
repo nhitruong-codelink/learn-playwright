@@ -52,7 +52,7 @@ env:
 
 jobs:
   test:
-    name: "test (${{ github.event.inputs.scope || 'regression' }} / ${{ github.event.inputs.browser || 'chromium' }})"
+    name: "test (${{ github.event.inputs.scope || 'regression' }} / ${{ github.event.inputs.browser || 'chromium' }} / shard ${{ matrix.shard }})"
     timeout-minutes: 60
     runs-on: ubuntu-latest
     strategy:
