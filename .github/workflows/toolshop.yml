@@ -9,8 +9,6 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    env:
-      DISABLE_LOGGING: "false"
     steps:
     - uses: actions/checkout@v4
 
@@ -26,7 +24,7 @@ jobs:
 
     - name: Start Toolshop app (UI, API, DB)
       working-directory: toolshop-app
-      run: docker compose up -d --build laravel-api angular-ui web mariadb mailcatcher
+      run: docker compose up -d --build laravel-api angular-ui web mariadb mailcatcher composer
 
     - name: Wait for API to be ready
       run: |
@@ -42,14 +40,22 @@ jobs:
     - name: Wait for Composer install to finish
       working-directory: toolshop-app
       run: |
+        ok=false
         for i in $(seq 1 60); do
           if docker compose exec -T laravel-api test -f /var/www/vendor/autoload.php; then
             echo "Composer dependencies are installed"
+            ok=true
             break
           fi
           echo "Waiting for composer install..."
           sleep 5
         done
+        if [ "$ok" != "true" ]; then
+          echo "::error::vendor/autoload.php not found after waiting. Dumping composer and laravel-api logs:"
+          docker compose logs composer --tail=200 || true
+          docker compose logs laravel-api --tail=200 || true
+          exit 1
+        fi
 
     - name: Seed database
       working-directory: toolshop-app
