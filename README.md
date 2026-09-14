@@ -25,7 +25,7 @@ Playwright + TypeScript end-to-end test suite for the [Practice Software Testing
 │   ├── network/        # Network mocking / interception tests
 │   └── visual/         # Visual regression (screenshot) tests
 ├── playwright.config.ts
-└── .github/workflows/playwright.yml
+└── .github/workflows/toolshop.yml
 ```
 
 ### Why this structure
@@ -104,16 +104,34 @@ npx allure serve allure-results   # Allure report
 
 ## CI/CD Setup
 
-Defined in `./.github/workflows/playwright.yml`, triggered on push/PR to `main`/`master`.
+Defined in `./.github/workflows/toolshop.yml`, triggered on push to `main`, on pull requests, and manually via `workflow_dispatch`.
 
-Since the Toolshop app isn't a hosted dependency, the pipeline builds and runs the entire stack (UI + API + DB) from source before executing tests:
+Since the Toolshop app isn't a hosted dependency, the pipeline builds and runs the entire stack (UI + API + DB) from source before executing tests, then runs Playwright in a sharded matrix:
 
 1. **Checkout** this repo and the Toolshop app repo (`testsmith-io/practice-software-testing`) side by side.
-2. **`docker compose up -d --build`** starts the Angular UI, Laravel API, and MariaDB containers — using the same ports/credentials (`4200`, `8091`, `3306`, db `toolshop`, `root`/`root`) as this project's `./.env` defaults, so no env overrides are needed.
-3. **Poll** the API and UI endpoints until they respond (containers, especially the Angular dev server, take time to become ready).
-4. **Seed the database** via `artisan migrate:fresh --seed --force` so tests run against consistent data.
-5. **Install Node dependencies and Playwright browsers**, then **run the full suite** across all 3 configured browsers (chromium, firefox, webkit).
-6. **Upload artifacts** — the Playwright HTML report and Allure results — regardless of pass/fail, for post-run debugging.
-7. **Tear down** the app stack (`docker compose down -v`) unconditionally, keeping the runner clean.
+2. **`docker compose up -d --build`** starts the Angular UI, Laravel API, MariaDB, and phpMyAdmin containers (phpMyAdmin is required because the `web`/nginx container's vhost config hardcodes a `fastcgi_pass phpmyadmin:9000` upstream — nginx won't start, and the API port never listens, without it).
+3. **Poll** the API endpoint (`$API_BASE_URL/products`) until it responds.
+4. **Wait for Composer install to finish** inside `laravel-api` (checks for `vendor/autoload.php`), then **fix `storage`/`bootstrap/cache` permissions** — the upstream `composer` service's `chown`/`chmod` step runs as a different UID than `laravel-api`'s remapped `www-data`, so ownership/permissions are re-applied explicitly.
+5. **Wait for MariaDB** to accept connections (`mysqladmin ping`).
+6. **Seed the database** via `artisan migrate:refresh --seed`, retried a few times, then **verify the seed data** (products count and a known category) actually landed, dumping logs/permissions on failure.
+7. **Poll the UI endpoint** (`$UI_BASE_URL`) until it responds.
+8. **Install Node dependencies and Playwright browsers** (chromium, firefox, webkit).
+9. **Run Playwright tests**, split across a `shard` matrix (1 or 2, depending on `workflow_dispatch` inputs). On push/PR this runs `--project=chromium --grep @regression`; on manual dispatch, CLI args (`--grep`, `--project`, `--retries`, `--repeat-each`, `--workers`, `--trace`, spec path) are built from the dispatch inputs (`scope`, `browser`, `test_name`, `spec`, `shards`, `retries`, `repeat_each`, `workers`, `trace`).
+10. **Upload per-shard artifacts** — Playwright blob reports and Allure results — regardless of pass/fail.
+11. **Tear down** the app stack (`docker compose down -v`) unconditionally, keeping the runner clean.
+12. A separate `merge-report` job downloads and merges all shards' blob/Allure results into a single HTML report and Allure report, uploaded as final artifacts.
+
+### `env` and secrets
+
+- **`UI_BASE_URL`** / **`API_BASE_URL`**: default to `http://localhost:4200` / `http://localhost:8091` (matching the in-job Docker stack's exposed ports), overridable via repository/organization `vars` if the workflow is ever pointed at an already-running or hosted instance instead of building the stack in-job.
+
+### Manual runs (`workflow_dispatch`)
+
+- **`scope`**: `regression` (default) or `smoke` — maps to `--grep @<scope>`.
+- **`browser`**: `chromium` (default), `firefox`, `webkit`, or `all` (no `--project` filter).
+- **`test_name`**: regex to filter by test title, overrides `scope`.
+- **`spec`**: run a single spec file, e.g. `tests/checkout/checkout-order.spec.ts`.
+- **`shards`**: `2` (default) or `1` — automatically forced to `1` when `test_name`/`spec` narrows the run, so a shard doesn't end up with 0 tests.
+- **`retries`**, **`repeat_each`**, **`workers`**, **`trace`**: passed straight through to the corresponding Playwright CLI flags.
 
 **Trade-off**: building the app from source in CI (rather than pulling prebuilt images or hitting a hosted environment) adds a few minutes to each run, but guarantees the pipeline is self-contained and doesn't depend on external hosted environments being available or in a known state.
